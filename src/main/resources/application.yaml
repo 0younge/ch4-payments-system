@@ -9,9 +9,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: ${DDL_AUTO:create}
-    defer-datasource-initialization: true
-
+      ddl-auto: ${DDL_AUTO:update}
+    defer-datasource-initialization: true  # 테이블 먼저 만들고 data.sql 돌려야함
   sql:
     init:
-      mode: always
+      mode: always  # data.sql 항상 실행 되게하는 것
