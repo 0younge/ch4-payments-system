@@ -1,6 +1,8 @@
 package com.example.ch4paymentssystem.domain.cart.service;
 
 import com.example.ch4paymentssystem.domain.cart.dto.AddCartItemRequest;
+import com.example.ch4paymentssystem.domain.cart.dto.CartItemResponse;
+import com.example.ch4paymentssystem.domain.cart.dto.CartResponse;
 import com.example.ch4paymentssystem.domain.cart.entity.Cart;
 import com.example.ch4paymentssystem.domain.cart.entity.CartItem;
 import com.example.ch4paymentssystem.domain.cart.repository.CartItemRepository;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,7 +27,22 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
 
-    // 장바구니 추가
+    // 장바구니 조회
+    @Transactional(readOnly = true)
+    public CartResponse getCart(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
+        List<CartItem> cartItems = cartItemRepository.findByCart(cart);
+        List<CartItemResponse> items = cartItems.stream()
+                .map(CartItemResponse::from)
+                .toList();
+        Integer totalAmount = items.stream()
+                .mapToInt(CartItemResponse::getItemTotalAmount)
+                .sum();
+        return new CartResponse(cart.getId(), items, totalAmount);
+    }
+
+    // 장바구니 담기
     @Transactional
     public void addCartItem(Long userId, AddCartItemRequest request) {
         Product product = productRepository.findById(request.getProductId())
