@@ -31,4 +31,13 @@ public class CartItem extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer quantity;
 
+    public CartItem(Cart cart, Product product, Integer quantity) {
+        this.cart = cart;
+        this.product = product;
+        this.quantity = quantity;
+    }
+
+    public void addQuantity(int quantity) {
+        this.quantity += quantity;
+    }
 }
