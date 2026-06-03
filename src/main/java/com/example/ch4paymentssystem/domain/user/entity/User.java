@@ -33,4 +33,12 @@ public class User extends BaseTimeEntity {
     @ColumnDefault("0")
     private Integer pointBalance = 0;
 
+    public User(String email, String password, String name, String phoneNumber) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.pointBalance = 0;
+    }
+
 }
