@@ -50,4 +50,20 @@ public class Order extends BaseTimeEntity {
 
     private LocalDateTime cancelledAt;
 
+    public static Order create(
+            User user,
+            String orderNumber,
+            int totalProductAmount,
+            int usedPointAmount,
+            OrderStatus orderStatus
+    ) {
+        Order order = new Order();
+        order.user = user;
+        order.orderNumber = orderNumber;
+        order.totalProductAmount = totalProductAmount;
+        order.usedPointAmount = usedPointAmount;
+        order.orderStatus = orderStatus;
+        return order;
+    }
+
 }
