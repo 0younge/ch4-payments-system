@@ -14,8 +14,6 @@ public class GlobalExceptionHandler {
     ) {
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(ApiResponse.fail(
-                        e.getErrorCode().getMessage()
-                ));
+                .body(ApiResponse.fail(e.getErrorCode().getMessage()));
     }
 }
