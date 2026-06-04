@@ -68,7 +68,7 @@ public class CartService {
     // 장바구니 수량 변경
     @Transactional
     public void updateCartItemQuantity(Long userId, Long cartItemId, UpdateCartItemQuantityRequest request) {
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
+        CartItem cartItem = cartItemRepository.findByIdWithCartAndProduct(cartItemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CART_ITEM_NOT_FOUND));
         if (!cartItem.getCart().getUser().getId().equals(userId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
