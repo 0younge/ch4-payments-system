@@ -2,9 +2,9 @@
 INSERT INTO users
 (email, password, name, phone_number, point_balance, created_at, updated_at)
 VALUES
-    ('test1@test.com', '1234', '길동홍', '01011112222', 10000, NOW(), NOW()),
-    ('test2@test.com', '1234', '홍길동', '01033334444', 5000, NOW(), NOW()),
-    ('test3@test.com', '1234', '김철수', '01055556666', 20000, NOW(), NOW());
+    ('test1@test.com', '$2a$10$AnECbl8oz6GR.iKwqk4Jwug7RhI1ilIiuSvQ.aRTebVN9HAKnbTU2', '길동홍', '01011112222', 10000, NOW(), NOW()),
+    ('test2@test.com', '$2a$10$AnECbl8oz6GR.iKwqk4Jwug7RhI1ilIiuSvQ.aRTebVN9HAKnbTU2', '홍길동', '01033334444', 5000, NOW(), NOW()),
+    ('test3@test.com', '$2a$10$AnECbl8oz6GR.iKwqk4Jwug7RhI1ilIiuSvQ.aRTebVN9HAKnbTU2', '김철수', '01055556666', 20000, NOW(), NOW());
 
 
 

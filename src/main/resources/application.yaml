@@ -14,3 +14,7 @@ spring:
   sql:
     init:
       mode: always  # data.sql 항상 실행 되게하는 것
+
+jwt:
+  secret-key: fhrmdlsrlsmddldjqtdmausqnsaudzhemwkrtjddldksehlfxjdlsepdjejgrpwkrtjdgktutwygkgktkffuwntpdy
+  expiration-time: 3600000
