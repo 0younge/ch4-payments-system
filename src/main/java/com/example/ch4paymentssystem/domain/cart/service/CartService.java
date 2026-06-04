@@ -32,7 +32,7 @@ public class CartService {
     public CartResponse getCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
-        List<CartItem> cartItems = cartItemRepository.findByCart(cart);
+        List<CartItem> cartItems = cartItemRepository.findByCartWithProduct(cart);
         List<CartItemResponse> items = cartItems.stream()
                 .map(CartItemResponse::from)
                 .toList();
