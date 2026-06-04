@@ -42,4 +42,19 @@ public class OrderItem extends BaseCreatedEntity {
     @Column(nullable = false)
     private Integer totalAmount;
 
+    public static OrderItem create(
+            Order order,
+            Product product,
+            String productName,
+            int productPrice,
+            int quantity
+    ) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.order = order;
+        orderItem.product = product;
+        orderItem.productName = productName;
+        orderItem.productPrice = productPrice;
+        orderItem.quantity = quantity;
+        return orderItem;
+    }
 }
