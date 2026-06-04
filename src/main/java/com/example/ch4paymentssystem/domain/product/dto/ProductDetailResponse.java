@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor // 필드 다 받는 생성자 자동 생성
 public class ProductDetailResponse {
 
-    private Long id;
+    private Long productId;
     private String name;
     private String description;
     private int price;
