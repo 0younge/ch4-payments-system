@@ -5,8 +5,7 @@ import com.example.ch4paymentssystem.domain.cart.entity.CartItem;
 import com.example.ch4paymentssystem.domain.cart.repository.CartItemRepository;
 import com.example.ch4paymentssystem.domain.cart.repository.CartRepository;
 import com.example.ch4paymentssystem.domain.order.dto.request.CreateOrderRequest;
-import com.example.ch4paymentssystem.domain.order.dto.response.CreateOrderItemResponse;
-import com.example.ch4paymentssystem.domain.order.dto.response.CreateOrderResponse;
+import com.example.ch4paymentssystem.domain.order.dto.response.*;
 import com.example.ch4paymentssystem.domain.order.entity.Order;
 import com.example.ch4paymentssystem.domain.order.entity.OrderItem;
 import com.example.ch4paymentssystem.domain.order.entity.OrderStatus;
@@ -154,7 +153,7 @@ public class OrderService {
             throw new BusinessException(ErrorCode.PRODUCT_NOT_ON_SALE);
         }
 
-        if (product.getStockQuantity() < quantity) {
+        if (product.getStock() < quantity) {
             throw new BusinessException(ErrorCode.OUT_OF_STOCK);
         }
     }
@@ -182,5 +181,51 @@ public class OrderService {
 
     private String generatePortonePaymentId() {
         return "payment-" + UUID.randomUUID();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOrderDetail(Long userId, Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ORDER);
+        }
+
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrderId(orderId);
+
+        List<OrderDetailItemResponse> itemResponses = orderItems.stream()
+                .map(item -> new OrderDetailItemResponse(
+                        item.getId(),
+                        item.getProduct().getId(),
+                        item.getProductName(),
+                        item.getProductPrice(),
+                        item.getQuantity(),
+                        item.getProductPrice() * item.getQuantity()
+                ))
+                .toList();
+
+        OrderPaymentResponse paymentResponse = new OrderPaymentResponse(
+                payment.getId(),
+                payment.getPortonePaymentId(),
+                payment.getPaymentStatus().name(),
+                payment.getPaidAt()
+        );
+
+        return new OrderDetailResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getOrderStatus().name(),
+                order.getTotalProductAmount(),
+                order.getUsedPointAmount(),
+                payment.getPgAmount(),
+                payment.getPoint(),
+                order.getCreatedAt(),
+                paymentResponse,
+                itemResponses
+        );
     }
 }
