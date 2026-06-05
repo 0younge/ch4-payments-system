@@ -33,7 +33,10 @@ public enum ErrorCode {
 
     // Order
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
-    INVALID_ORDER_STATUS(HttpStatus.CONFLICT, "주문 상태가 올바르지 않습니다.");
+    INVALID_ORDER_STATUS(HttpStatus.CONFLICT, "주문 상태가 올바르지 않습니다."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 정보를 찾을 수 없습니다."),
+    FORBIDDEN_ORDER(HttpStatus.FORBIDDEN, "해당 주문에 접근할 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;
