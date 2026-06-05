@@ -21,6 +21,10 @@ import com.example.ch4paymentssystem.domain.user.repository.UserRepository;
 import com.example.ch4paymentssystem.global.exception.BusinessException;
 import com.example.ch4paymentssystem.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -226,6 +230,59 @@ public class OrderService {
                 order.getCreatedAt(),
                 paymentResponse,
                 itemResponses
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OrderListResponse getMyOrders(Long userId, OrderStatus status, int page, int size) {
+        if (page < 1) {
+            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST);
+        }
+
+        if (size < 1) {
+            throw new BusinessException(ErrorCode.INVALID_PAGE_REQUEST);
+        }
+
+        Pageable pageable = PageRequest.of(
+                page - 1,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Page<Order> orders;
+
+        if (status == null) {
+            orders = orderRepository.findAllByUserId(userId, pageable);
+        } else {
+            orders = orderRepository.findAllByUserIdAndStatus(userId, status, pageable);
+        }
+
+        List<OrderSummaryResponse> content = orders.getContent().stream()
+                .map(order -> {
+                    Payment payment = paymentRepository.findByOrderId(order.getId())
+                            .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+                    return new OrderSummaryResponse(
+                            order.getId(),
+                            order.getOrderNumber(),
+                            order.getOrderStatus().name(),
+                            order.getTotalProductAmount(),
+                            order.getUsedPointAmount(),
+                            payment.getPgAmount(),
+                            payment.getPaymentStatus().name(),
+                            order.getCreatedAt()
+                    );
+                })
+                .toList();
+
+        return new OrderListResponse(
+                content,
+                page,
+                size,
+                orders.getTotalElements(),
+                orders.getTotalPages(),
+                orders.hasNext(),
+                orders.hasPrevious()
         );
     }
 }
