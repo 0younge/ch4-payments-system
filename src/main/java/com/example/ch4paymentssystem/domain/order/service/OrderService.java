@@ -4,6 +4,7 @@ import com.example.ch4paymentssystem.domain.cart.entity.Cart;
 import com.example.ch4paymentssystem.domain.cart.entity.CartItem;
 import com.example.ch4paymentssystem.domain.cart.repository.CartItemRepository;
 import com.example.ch4paymentssystem.domain.cart.repository.CartRepository;
+import com.example.ch4paymentssystem.domain.order.dto.request.CancelOrderRequest;
 import com.example.ch4paymentssystem.domain.order.dto.request.CreateOrderRequest;
 import com.example.ch4paymentssystem.domain.order.dto.response.*;
 import com.example.ch4paymentssystem.domain.order.entity.Order;
@@ -283,6 +284,60 @@ public class OrderService {
                 orders.getTotalPages(),
                 orders.hasNext(),
                 orders.hasPrevious()
+        );
+    }
+
+    @Transactional
+    public CancelOrderResponse cancelOrder(
+            Long userId,
+            Long orderId,
+            CancelOrderRequest request
+    ) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ORDER);
+        }
+
+        if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new BusinessException(ErrorCode.INVALID_PAYMENT_STATUS);
+        }
+
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrderId(orderId);
+
+        List<RestoredStockResponse> restoredStock = orderItems.stream()
+                .map(orderItem -> {
+                    Product product = orderItem.getProduct();
+
+                    product.increaseStock(orderItem.getQuantity());
+
+                    return new RestoredStockResponse(
+                            product.getId(),
+                            orderItem.getProductName(),
+                            orderItem.getQuantity()
+                    );
+                })
+                .toList();
+
+        order.cancel();
+        payment.fail();
+
+        return new CancelOrderResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getOrderStatus().name(),
+                payment.getId(),
+                payment.getPaymentStatus().name(),
+                restoredStock,
+                LocalDateTime.now()
         );
     }
 }
