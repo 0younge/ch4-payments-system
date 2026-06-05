@@ -89,4 +89,12 @@ public class CartService {
         }
         cartItemRepository.delete(cartItem);
     }
+
+    // 장바구니 전체 비우기
+    @Transactional
+    public void clearCart(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_ITEM_NOT_FOUND));
+        cartItemRepository.deleteAllByCart(cart);
+    }
 }
