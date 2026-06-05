@@ -3,6 +3,7 @@ package com.example.ch4paymentssystem.domain.cart.service;
 import com.example.ch4paymentssystem.domain.cart.dto.AddCartItemRequest;
 import com.example.ch4paymentssystem.domain.cart.dto.CartItemResponse;
 import com.example.ch4paymentssystem.domain.cart.dto.CartResponse;
+import com.example.ch4paymentssystem.domain.cart.dto.UpdateCartItemQuantityRequest;
 import com.example.ch4paymentssystem.domain.cart.entity.Cart;
 import com.example.ch4paymentssystem.domain.cart.entity.CartItem;
 import com.example.ch4paymentssystem.domain.cart.repository.CartItemRepository;
@@ -62,5 +63,19 @@ public class CartService {
             CartItem cartItem = new CartItem(cart, product, request.getQuantity());
             cartItemRepository.save(cartItem);
         }
+    }
+
+    // 장바구니 수량 변경
+    @Transactional
+    public void updateCartItemQuantity(Long userId, Long cartItemId, UpdateCartItemQuantityRequest request) {
+        CartItem cartItem = cartItemRepository.findByIdWithCartAndProduct(cartItemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_ITEM_NOT_FOUND));
+        if (!cartItem.getCart().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
+        }
+        if (cartItem.getProduct().getStock() < request.getQuantity()) {
+            throw new BusinessException(ErrorCode.OUT_OF_STOCK);
+        }
+        cartItem.updateQuantity(request.getQuantity());
     }
 }
