@@ -34,7 +34,7 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 정보를 찾을 수 없습니다."),
     FORBIDDEN_ORDER(HttpStatus.FORBIDDEN, "해당 주문에 접근할 수 없습니다."),
     INVALID_PAGE_REQUEST(HttpStatus.BAD_REQUEST, "페이지 요청값이 올바르지 않습니다."),
-    INVALID_PAYMENT_STATUS(HttpStatus.CONFLICT, "현재 결제 상태에서는 처리할 수 없습니다.");;
+    INVALID_PAYMENT_STATUS(HttpStatus.CONFLICT, "현재 결제 상태에서는 처리할 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;

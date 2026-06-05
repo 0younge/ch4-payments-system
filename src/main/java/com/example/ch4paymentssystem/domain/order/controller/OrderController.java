@@ -2,10 +2,8 @@ package com.example.ch4paymentssystem.domain.order.controller;
 
 import com.example.ch4paymentssystem.domain.order.dto.request.CancelOrderRequest;
 import com.example.ch4paymentssystem.domain.order.dto.request.CreateOrderRequest;
-import com.example.ch4paymentssystem.domain.order.dto.response.CancelOrderResponse;
-import com.example.ch4paymentssystem.domain.order.dto.response.CreateOrderResponse;
-import com.example.ch4paymentssystem.domain.order.dto.response.OrderDetailResponse;
-import com.example.ch4paymentssystem.domain.order.dto.response.OrderListResponse;
+import com.example.ch4paymentssystem.domain.order.dto.request.OrderPreviewRequest;
+import com.example.ch4paymentssystem.domain.order.dto.response.*;
 import com.example.ch4paymentssystem.domain.order.entity.OrderStatus;
 import com.example.ch4paymentssystem.domain.order.service.OrderService;
 import com.example.ch4paymentssystem.global.response.ApiResponse;
@@ -70,6 +68,22 @@ public class OrderController {
 
         return ResponseEntity.ok(
                 ApiResponse.success("주문이 취소되었습니다.", response)
+        );
+    }
+
+    @PostMapping("/preview")
+    public ResponseEntity<ApiResponse<OrderPreviewResponse>> previewOrder(
+            @AuthUser Long userId,
+            @RequestBody OrderPreviewRequest request
+    ) {
+        OrderPreviewResponse response =
+                orderService.previewOrder(userId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "주문서 미리보기에 성공했습니다.",
+                        response
+                )
         );
     }
 
