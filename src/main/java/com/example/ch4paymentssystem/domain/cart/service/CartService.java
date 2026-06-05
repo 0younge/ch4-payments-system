@@ -78,4 +78,23 @@ public class CartService {
         }
         cartItem.updateQuantity(request.getQuantity());
     }
+
+    // 장바구니 상품 개별 삭제
+    @Transactional
+    public void deleteCartItem(Long userId, Long cartItemId) {
+        CartItem cartItem = cartItemRepository.findByIdWithCartAndProduct(cartItemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_ITEM_NOT_FOUND));
+        if (!cartItem.getCart().getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_RESOURCE);
+        }
+        cartItemRepository.delete(cartItem);
+    }
+
+    // 장바구니 전체 비우기
+    @Transactional
+    public void clearCart(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_ITEM_NOT_FOUND));
+        cartItemRepository.deleteAllByCart(cart);
+    }
 }

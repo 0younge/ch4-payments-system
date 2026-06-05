@@ -36,4 +36,18 @@ public class CartController {
         cartService.updateCartItemQuantity(1L, cartItemId, request);
         return ResponseEntity.ok(ApiResponse.success("수량이 변경되었습니다."));
     }
+
+    // 장바구니 상품 개별 삭제
+    @DeleteMapping("/api/cart/items/{cartItemId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCartItem(@PathVariable Long cartItemId) {
+        cartService.deleteCartItem(1L, cartItemId);
+        return ResponseEntity.ok(ApiResponse.success("장바구니 상품이 삭제되었습니다."));
+    }
+
+    // 장바구니 전체 비우기
+    @DeleteMapping("/api/cart")
+    public ResponseEntity<ApiResponse<Void>> clearCart() {
+        cartService.clearCart(1L);
+        return ResponseEntity.ok(ApiResponse.success("장바구니를 비웠습니다."));
+    }
 }
