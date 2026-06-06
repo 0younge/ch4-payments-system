@@ -68,4 +68,29 @@ public class OrderItem extends BaseCreatedEntity {
         orderItem.totalAmount = productPrice * quantity;
         return orderItem;
     }
+
+    public int getRefundableQuantity() {
+        return this.quantity - this.refundedQuantity;
+    }
+
+    public int calculateRefundAmount(int refundQuantity) {
+        validateRefundQuantity(refundQuantity);
+
+        long refundAmount = (long) this.productPrice * refundQuantity;
+        if (refundAmount > Integer.MAX_VALUE) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
+        }
+
+        return (int) refundAmount;
+    }
+
+    private void validateRefundQuantity(int refundQuantity) {
+        if (refundQuantity <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_QUANTITY);
+        }
+
+        if (refundQuantity > getRefundableQuantity()) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_QUANTITY);
+        }
+    }
 }
