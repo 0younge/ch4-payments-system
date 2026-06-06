@@ -63,6 +63,8 @@ public class OrderService {
         int usedPointAmount = request.getUsedPointAmount();
         validatePoint(user, totalAmount, usedPointAmount);
 
+        int pgAmount = totalAmount - usedPointAmount;
+        int earnedPointAmount = pgAmount / 100;
         String orderNumber = generateOrderNumber();
 
         Order order = Order.create(
@@ -70,6 +72,8 @@ public class OrderService {
                 orderNumber,
                 totalAmount,
                 usedPointAmount,
+                pgAmount,
+                earnedPointAmount,
                 OrderStatus.PAYMENT_PENDING
         );
 
@@ -81,16 +85,12 @@ public class OrderService {
 
         orderItemRepository.saveAll(orderItems);
 
-        int pgAmount = totalAmount - usedPointAmount;
         String portonePaymentId = generatePortonePaymentId();
 
         Payment payment = Payment.create(
                 savedOrder,
                 portonePaymentId,
-                totalAmount,
-                usedPointAmount,
-                pgAmount,
-                PaymentStatus.READY
+                pgAmount
         );
 
         Payment savedPayment = paymentRepository.save(payment);
@@ -116,6 +116,7 @@ public class OrderService {
                 totalAmount,
                 usedPointAmount,
                 pgAmount,
+                earnedPointAmount,
                 itemResponses
         );
     }
@@ -228,7 +229,7 @@ public class OrderService {
                 order.getTotalProductAmount(),
                 order.getUsedPointAmount(),
                 payment.getPgAmount(),
-                payment.getPoint(),
+                order.getEarnedPointAmount(),
                 order.getCreatedAt(),
                 paymentResponse,
                 itemResponses
@@ -254,9 +255,9 @@ public class OrderService {
         Page<Order> orders;
 
         if (status == null) {
-            orders = orderRepository.findAllByUserId(userId, pageable);
+            orders = orderRepository.findAllByUser_Id(userId, pageable);
         } else {
-            orders = orderRepository.findAllByUserIdAndStatus(userId, status, pageable);
+            orders = orderRepository.findAllByUser_IdAndOrderStatus(userId, status, pageable);
         }
 
         List<OrderSummaryResponse> content = orders.getContent().stream()
@@ -308,7 +309,7 @@ public class OrderService {
         Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+        if (payment.getPaymentStatus() != PaymentStatus.READY) {
             throw new BusinessException(ErrorCode.INVALID_PAYMENT_STATUS);
         }
 
@@ -329,7 +330,7 @@ public class OrderService {
                 .toList();
 
         order.cancel();
-        payment.fail();
+        payment.fail("결제 대기 주문 취소");
 
         return new CancelOrderResponse(
                 order.getId(),

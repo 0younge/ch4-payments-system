@@ -2,6 +2,8 @@ package com.example.ch4paymentssystem.domain.order.entity;
 
 import com.example.ch4paymentssystem.common.BaseCreatedEntity;
 import com.example.ch4paymentssystem.domain.product.entity.Product;
+import com.example.ch4paymentssystem.global.exception.BusinessException;
+import com.example.ch4paymentssystem.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -49,12 +51,21 @@ public class OrderItem extends BaseCreatedEntity {
             int productPrice,
             int quantity
     ) {
+        if (productPrice < 0) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_AMOUNT);
+        }
+
+        if (quantity <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_QUANTITY);
+        }
+
         OrderItem orderItem = new OrderItem();
         orderItem.order = order;
         orderItem.product = product;
         orderItem.productName = productName;
         orderItem.productPrice = productPrice;
         orderItem.quantity = quantity;
+        orderItem.totalAmount = productPrice * quantity;
         return orderItem;
     }
 }

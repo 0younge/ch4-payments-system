@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   application:
     name: ch4-payments-system
 
@@ -18,3 +21,10 @@ spring:
 jwt:
   secret-key: fhrmdlsrlsmddldjqtdmausqnsaudzhemwkrtjddldksehlfxjdlsepdjejgrpwkrtjdgktutwygkgktkffuwntpdy
   expiration-time: 3600000
+
+portone:
+  base-url: ${PORTONE_BASE_URL:https://api.portone.io}
+  api-secret: ${PORTONE_API_SECRET:}
+  store-id: ${PORTONE_STORE_ID:}
+  channel-key: ${PORTONE_CHANNEL_KEY:}
+  webhook-secret: ${PORTONE_WEBHOOK_SECRET:}

@@ -26,6 +26,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
     PRODUCT_NOT_ON_SALE(HttpStatus.CONFLICT, "판매중인 상품이 아닙니다."),
     OUT_OF_STOCK(HttpStatus.CONFLICT, "재고가 부족합니다."),
+    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "수량이 올바르지 않습니다."),
 
     // Point
     INVALID_POINT_AMOUNT(HttpStatus.BAD_REQUEST, "사용 포인트 금액이 올바르지 않습니다."),
@@ -33,11 +34,15 @@ public enum ErrorCode {
 
     // Order
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
+    INVALID_ORDER_AMOUNT(HttpStatus.BAD_REQUEST, "주문 금액이 올바르지 않습니다."),
     INVALID_ORDER_STATUS(HttpStatus.CONFLICT, "주문 상태가 올바르지 않습니다."),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 정보를 찾을 수 없습니다."),
     FORBIDDEN_ORDER(HttpStatus.FORBIDDEN, "해당 주문에 접근할 수 없습니다."),
     INVALID_PAGE_REQUEST(HttpStatus.BAD_REQUEST, "페이지 요청값이 올바르지 않습니다."),
-    INVALID_PAYMENT_STATUS(HttpStatus.CONFLICT, "현재 결제 상태에서는 처리할 수 없습니다.");
+    INVALID_PAYMENT_STATUS(HttpStatus.CONFLICT, "현재 결제 상태에서는 처리할 수 없습니다."),
+    INVALID_PAYMENT_REQUEST(HttpStatus.BAD_REQUEST, "결제 요청 정보가 올바르지 않습니다."),
+    PAYMENT_NOT_PAID(HttpStatus.CONFLICT, "결제가 완료되지 않았습니다."),
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "결제 금액이 일치하지 않습니다.");
 
     private final HttpStatus status;
     private final String message;

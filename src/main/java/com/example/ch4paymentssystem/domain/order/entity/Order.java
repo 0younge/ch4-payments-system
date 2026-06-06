@@ -57,15 +57,32 @@ public class Order extends BaseTimeEntity {
             String orderNumber,
             int totalProductAmount,
             int usedPointAmount,
+            int pgPaymentAmount,
+            int earnedPointAmount,
             OrderStatus orderStatus
     ) {
+        if (totalProductAmount < 0 || usedPointAmount < 0 || pgPaymentAmount < 0 || earnedPointAmount < 0) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_AMOUNT);
+        }
+
         Order order = new Order();
         order.user = user;
         order.orderNumber = orderNumber;
         order.totalProductAmount = totalProductAmount;
         order.usedPointAmount = usedPointAmount;
+        order.pgPaymentAmount = pgPaymentAmount;
+        order.earnedPointAmount = earnedPointAmount;
         order.orderStatus = orderStatus;
+        order.orderedAt = LocalDateTime.now();
         return order;
+    }
+
+    public void pay() {
+        if (this.orderStatus != OrderStatus.PAYMENT_PENDING) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        this.orderStatus = OrderStatus.PAID;
     }
 
     public void cancel() {
@@ -74,6 +91,7 @@ public class Order extends BaseTimeEntity {
         }
 
         this.orderStatus = OrderStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
     }
 
 }

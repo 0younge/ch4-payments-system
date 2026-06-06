@@ -13,6 +13,10 @@ import java.util.Optional;
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     Optional<CartItem> findByCartAndProduct(Cart cart, Product product);
 
+    List<CartItem> findAllByCartId(Long cartId);
+
+    List<CartItem> findAllByIdInAndCartId(List<Long> cartItemIds, Long cartId);
+
     @Query("select ci from CartItem ci join fetch ci.product where ci.cart = :cart")
     List<CartItem> findByCartWithProduct(Cart cart);
 
@@ -20,4 +24,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     Optional<CartItem> findByIdWithCartAndProduct(@Param("cartItemId") Long cartItemId);
 
     void deleteAllByCart(Cart cart);
+
+    void deleteAllByCartIdAndProductIdIn(Long cartId, List<Long> productIds);
 }

@@ -18,5 +18,6 @@ public class CreateOrderResponse {
     private int totalAmount;
     private int usedPointAmount;
     private int pgAmount;
+    private int earnedPointAmount;
     private List<CreateOrderItemResponse> items;
 }
