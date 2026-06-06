@@ -2,6 +2,8 @@ package com.example.ch4paymentssystem.domain.order.entity;
 
 import com.example.ch4paymentssystem.common.BaseTimeEntity;
 import com.example.ch4paymentssystem.domain.user.entity.User;
+import com.example.ch4paymentssystem.global.exception.BusinessException;
+import com.example.ch4paymentssystem.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -64,6 +66,14 @@ public class Order extends BaseTimeEntity {
         order.usedPointAmount = usedPointAmount;
         order.orderStatus = orderStatus;
         return order;
+    }
+
+    public void cancel() {
+        if (this.orderStatus != OrderStatus.PAYMENT_PENDING) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        this.orderStatus = OrderStatus.CANCELLED;
     }
 
 }

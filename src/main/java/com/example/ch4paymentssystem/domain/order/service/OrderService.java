@@ -4,7 +4,9 @@ import com.example.ch4paymentssystem.domain.cart.entity.Cart;
 import com.example.ch4paymentssystem.domain.cart.entity.CartItem;
 import com.example.ch4paymentssystem.domain.cart.repository.CartItemRepository;
 import com.example.ch4paymentssystem.domain.cart.repository.CartRepository;
+import com.example.ch4paymentssystem.domain.order.dto.request.CancelOrderRequest;
 import com.example.ch4paymentssystem.domain.order.dto.request.CreateOrderRequest;
+import com.example.ch4paymentssystem.domain.order.dto.request.OrderPreviewRequest;
 import com.example.ch4paymentssystem.domain.order.dto.response.*;
 import com.example.ch4paymentssystem.domain.order.entity.Order;
 import com.example.ch4paymentssystem.domain.order.entity.OrderItem;
@@ -283,6 +285,129 @@ public class OrderService {
                 orders.getTotalPages(),
                 orders.hasNext(),
                 orders.hasPrevious()
+        );
+    }
+
+    @Transactional
+    public CancelOrderResponse cancelOrder(
+            Long userId,
+            Long orderId,
+            CancelOrderRequest request
+    ) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ORDER);
+        }
+
+        if (order.getOrderStatus() != OrderStatus.PAYMENT_PENDING) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new BusinessException(ErrorCode.INVALID_PAYMENT_STATUS);
+        }
+
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrderId(orderId);
+
+        List<RestoredStockResponse> restoredStock = orderItems.stream()
+                .map(orderItem -> {
+                    Product product = orderItem.getProduct();
+
+                    product.increaseStock(orderItem.getQuantity());
+
+                    return new RestoredStockResponse(
+                            product.getId(),
+                            orderItem.getProductName(),
+                            orderItem.getQuantity()
+                    );
+                })
+                .toList();
+
+        order.cancel();
+        payment.fail();
+
+        return new CancelOrderResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getOrderStatus().name(),
+                payment.getId(),
+                payment.getPaymentStatus().name(),
+                restoredStock,
+                LocalDateTime.now()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OrderPreviewResponse previewOrder(
+            Long userId,
+            OrderPreviewRequest request
+    ) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
+
+        List<CartItem> cartItems = getPreviewCartItems(
+                cart.getId(),
+                request.getCartItemIds()
+        );
+
+        if (cartItems.isEmpty()) {
+            throw new BusinessException(ErrorCode.CART_ITEM_NOT_FOUND);
+        }
+
+        List<OrderPreviewItemResponse> items = cartItems.stream()
+                .map(this::toPreviewItemResponse)
+                .toList();
+
+        int totalAmount = items.stream()
+                .mapToInt(OrderPreviewItemResponse::getItemTotalAmount)
+                .sum();
+
+        return new OrderPreviewResponse(
+                items,
+                totalAmount
+        );
+    }
+
+    private List<CartItem> getPreviewCartItems(
+            Long cartId,
+            List<Long> cartItemIds
+    ) {
+        if (cartItemIds == null || cartItemIds.isEmpty()) {
+            return cartItemRepository.findAllByCartId(cartId);
+        }
+
+        return cartItemRepository.findAllByIdInAndCartId(
+                cartItemIds,
+                cartId
+        );
+    }
+
+    private OrderPreviewItemResponse toPreviewItemResponse(
+            CartItem cartItem
+    ) {
+        Product product = cartItem.getProduct();
+
+        validateProduct(
+                product,
+                cartItem.getQuantity()
+        );
+
+        int itemTotalAmount =
+                product.getPrice() * cartItem.getQuantity();
+
+        return new OrderPreviewItemResponse(
+                cartItem.getId(),
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                cartItem.getQuantity(),
+                product.getStock(),
+                itemTotalAmount
         );
     }
 }
