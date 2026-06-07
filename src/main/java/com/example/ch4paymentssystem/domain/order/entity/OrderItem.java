@@ -84,6 +84,13 @@ public class OrderItem extends BaseCreatedEntity {
         return (int) refundAmount;
     }
 
+    public void refund(int refundQuantity) {
+        validateRefundQuantity(refundQuantity);
+
+        this.product.increaseStock(refundQuantity);
+        this.refundedQuantity += refundQuantity;
+    }
+
     private void validateRefundQuantity(int refundQuantity) {
         if (refundQuantity <= 0) {
             throw new BusinessException(ErrorCode.INVALID_REFUND_QUANTITY);

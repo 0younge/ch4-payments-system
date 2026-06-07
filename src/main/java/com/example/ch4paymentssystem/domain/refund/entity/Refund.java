@@ -84,4 +84,27 @@ public class Refund extends BaseTimeEntity {
             throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
         }
     }
+
+    public void complete() {
+        if (this.refundStatus != RefundStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_STATUS);
+        }
+
+        this.refundStatus = RefundStatus.COMPLETED;
+        this.refundedAt = LocalDateTime.now();
+    }
+
+    public void fail(String failReason) {
+        if (this.refundStatus != RefundStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_STATUS);
+        }
+
+        if (failReason == null || failReason.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
+        }
+
+        this.refundStatus = RefundStatus.FAILED;
+        this.failedAt = LocalDateTime.now();
+        this.failReason = failReason;
+    }
 }

@@ -47,7 +47,8 @@ public enum ErrorCode {
     REFUND_NOT_FOUND(HttpStatus.NOT_FOUND, "환불 정보를 찾을 수 없습니다."),
     INVALID_REFUND_REQUEST(HttpStatus.BAD_REQUEST, "환불 요청 정보가 올바르지 않습니다."),
     INVALID_REFUND_STATUS(HttpStatus.CONFLICT, "현재 결제 상태에서는 환불할 수 없습니다."),
-    INVALID_REFUND_QUANTITY(HttpStatus.BAD_REQUEST, "환불 수량이 올바르지 않습니다.");
+    INVALID_REFUND_QUANTITY(HttpStatus.BAD_REQUEST, "환불 수량이 올바르지 않습니다."),
+    REFUND_FAILED(HttpStatus.CONFLICT, "환불 처리에 실패했습니다.");
 
     private final HttpStatus status;
     private final String message;

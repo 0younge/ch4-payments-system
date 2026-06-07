@@ -45,7 +45,7 @@ public class PaymentService {
         PaymentGatewayResponse portonePayment = paymentGateway.getPayment(payment.getPortonePaymentId());
 
         if (!payment.getPortonePaymentId().equals(portonePayment.id())) {
-            cancelPortonePayment(payment.getPortonePaymentId(), "결제 식별자 불일치 자동 취소");
+            cancelPortonePayment(payment, "결제 식별자 불일치 자동 취소");
             paymentCommandService.failPaymentAndOrder(payment.getId(), "결제 식별자 불일치");
             throw new BusinessException(ErrorCode.INVALID_PAYMENT_REQUEST);
         }
@@ -56,7 +56,7 @@ public class PaymentService {
         }
 
         if (payment.getPgAmount() != portonePayment.totalAmount()) {
-            cancelPortonePayment(payment.getPortonePaymentId(), "결제 금액 불일치 자동 취소");
+            cancelPortonePayment(payment, "결제 금액 불일치 자동 취소");
             paymentCommandService.failPaymentAndOrder(payment.getId(), "결제 금액 불일치");
             throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
         }
@@ -65,16 +65,20 @@ public class PaymentService {
             return paymentCommandService.completePayment(payment.getId());
         } catch (BusinessException e) {
             if (e.getErrorCode() == ErrorCode.NOT_ENOUGH_POINT) {
-                cancelPortonePayment(payment.getPortonePaymentId(), "포인트 잔액 부족 자동 취소");
+                cancelPortonePayment(payment, "포인트 잔액 부족 자동 취소");
                 paymentCommandService.failPaymentAndOrder(payment.getId(), "포인트 잔액 부족");
             }
             throw e;
         }
     }
 
-    private void cancelPortonePayment(String portonePaymentId, String reason) {
+    private void cancelPortonePayment(Payment payment, String reason) {
+        if (payment.getPgAmount() == 0) {
+            return;
+        }
+
         try {
-            paymentGateway.cancelPayment(portonePaymentId, reason);
+            paymentGateway.cancelPayment(payment.getPortonePaymentId(), payment.getPgAmount(), reason);
         } catch (RuntimeException e) {
             log.warn("PortOne compensation cancel failed.", e);
         }

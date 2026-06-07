@@ -54,7 +54,12 @@ public class Product extends BaseTimeEntity {
             throw new BusinessException(ErrorCode.INVALID_QUANTITY);
         }
 
-        this.stock += quantity;
+        long nextStock = (long) this.stock + quantity;
+        if (nextStock > Integer.MAX_VALUE) {
+            throw new BusinessException(ErrorCode.INVALID_QUANTITY);
+        }
+
+        this.stock = (int) nextStock;
     }
 
 }

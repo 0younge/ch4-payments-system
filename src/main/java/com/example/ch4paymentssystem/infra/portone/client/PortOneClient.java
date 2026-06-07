@@ -44,11 +44,11 @@ public class PortOneClient implements PaymentGateway {
     }
 
     @Override
-    public void cancelPayment(String portonePaymentId, String reason) {
+    public void cancelPayment(String portonePaymentId, int amount, String reason) {
         portOneRestClient.post()
                 .uri("/payments/{paymentId}/cancel", portonePaymentId)
                 .header("Idempotency-Key", UUID.randomUUID().toString())
-                .body(new PortOneCancelRequest(reason, portOneProperties.getStoreId()))
+                .body(new PortOneCancelRequest(reason, amount, portOneProperties.getStoreId()))
                 .retrieve()
                 .toBodilessEntity();
     }

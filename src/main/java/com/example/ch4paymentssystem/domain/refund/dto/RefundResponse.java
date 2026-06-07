@@ -15,6 +15,7 @@ public class RefundResponse {
     private Long refundId;
     private Long orderId;
     private Long paymentId;
+    private String portonePaymentId;
     private String refundStatus;
     private int totalRefundAmount;
     private int pointRefundAmount;
@@ -29,6 +30,7 @@ public class RefundResponse {
                 refund.getId(),
                 payment.getOrder().getId(),
                 payment.getId(),
+                payment.getPortonePaymentId(),
                 refund.getRefundStatus().name(),
                 refund.getTotalRefundAmount(),
                 refund.getPointRefundAmount(),

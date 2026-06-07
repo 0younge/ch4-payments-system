@@ -84,4 +84,20 @@ public class Payment extends BaseTimeEntity {
         this.failReason = failReason;
     }
 
+    public void partialRefund() {
+        if (this.paymentStatus != PaymentStatus.PAID && this.paymentStatus != PaymentStatus.PARTIAL_REFUNDED) {
+            throw new BusinessException(ErrorCode.INVALID_PAYMENT_STATUS);
+        }
+
+        this.paymentStatus = PaymentStatus.PARTIAL_REFUNDED;
+    }
+
+    public void refund() {
+        if (this.paymentStatus != PaymentStatus.PAID && this.paymentStatus != PaymentStatus.PARTIAL_REFUNDED) {
+            throw new BusinessException(ErrorCode.INVALID_PAYMENT_STATUS);
+        }
+
+        this.paymentStatus = PaymentStatus.REFUNDED;
+    }
+
 }

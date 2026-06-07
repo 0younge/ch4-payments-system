@@ -94,4 +94,13 @@ public class Order extends BaseTimeEntity {
         this.cancelledAt = LocalDateTime.now();
     }
 
+    public void refund() {
+        if (this.orderStatus != OrderStatus.PAID) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        this.orderStatus = OrderStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
+    }
+
 }
