@@ -56,11 +56,36 @@ public class User extends BaseTimeEntity {
     }
 
     public void earnPoint(int amount) {
+        increasePoint(amount);
+    }
+
+    public void refundUsedPoint(int amount) {
+        increasePoint(amount);
+    }
+
+    public void cancelEarnedPoint(int amount) {
         if (amount < 0) {
             throw new BusinessException(ErrorCode.INVALID_POINT_AMOUNT);
         }
 
-        this.pointBalance += amount;
+        if (this.pointBalance < amount) {
+            throw new BusinessException(ErrorCode.NOT_ENOUGH_POINT);
+        }
+
+        this.pointBalance -= amount;
+    }
+
+    private void increasePoint(int amount) {
+        if (amount < 0) {
+            throw new BusinessException(ErrorCode.INVALID_POINT_AMOUNT);
+        }
+
+        long nextPointBalance = (long) this.pointBalance + amount;
+        if (nextPointBalance > Integer.MAX_VALUE) {
+            throw new BusinessException(ErrorCode.INVALID_POINT_AMOUNT);
+        }
+
+        this.pointBalance = (int) nextPointBalance;
     }
 
 }
