@@ -51,8 +51,7 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
+        Cart cart = getOrCreateCart(user);
 
         List<CartItem> cartItems = getOrderCartItems(cart.getId(), request.getCartItemIds());
 
@@ -345,13 +344,14 @@ public class OrderService {
         );
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public OrderPreviewResponse previewOrder(
             Long userId,
             List<Long> cartItemIds
     ) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Cart cart = getOrCreateCart(user);
 
         List<CartItem> cartItems = getPreviewCartItems(
                 cart.getId(),
@@ -374,6 +374,11 @@ public class OrderService {
                 items,
                 totalAmount
         );
+    }
+
+    private Cart getOrCreateCart(User user) {
+        return cartRepository.findByUserId(user.getId())
+                .orElseGet(() -> cartRepository.save(Cart.create(user)));
     }
 
     private List<CartItem> getPreviewCartItems(
