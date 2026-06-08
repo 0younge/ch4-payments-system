@@ -30,7 +30,12 @@ public class RefundService {
             throw new BusinessException(ErrorCode.REFUND_FAILED);
         }
 
-        return refundCommandService.completeRefund(requestedRefund.getRefundId());
+        try {
+            return refundCommandService.completeRefund(requestedRefund.getRefundId());
+        } catch (RuntimeException e) {
+            refundCommandService.failRefund(requestedRefund.getRefundId(), "환불 후처리 실패");
+            throw new BusinessException(ErrorCode.REFUND_FAILED);
+        }
     }
 
     private void cancelPgPayment(RefundResponse refund) {
