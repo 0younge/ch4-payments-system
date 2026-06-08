@@ -28,7 +28,6 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
 
-    // 장바구니 조회
     @Transactional(readOnly = true)
     public CartResponse getCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
@@ -43,29 +42,25 @@ public class CartService {
         return new CartResponse(cart.getId(), items, totalAmount);
     }
 
-    // 장바구니 담기
     @Transactional
     public void addCartItem(Long userId, AddCartItemRequest request) {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
-        if (product.getStatus() != ProductStatus.ON_SALE) {
-            throw new BusinessException(ErrorCode.PRODUCT_NOT_ON_SALE);
-        }
-        if (product.getStock() < request.getQuantity()) {
-            throw new BusinessException(ErrorCode.OUT_OF_STOCK);
-        }
+        validateProduct(product, request.getQuantity());
+
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
         Optional<CartItem> existingCartItem = cartItemRepository.findByCartAndProduct(cart, product);
         if (existingCartItem.isPresent()) {
-            existingCartItem.get().addQuantity(request.getQuantity());
+            CartItem cartItem = existingCartItem.get();
+            validateStock(product, calculateNextQuantity(cartItem.getQuantity(), request.getQuantity()));
+            cartItem.addQuantity(request.getQuantity());
         } else {
             CartItem cartItem = new CartItem(cart, product, request.getQuantity());
             cartItemRepository.save(cartItem);
         }
     }
 
-    // 장바구니 수량 변경
     @Transactional
     public void updateCartItemQuantity(Long userId, Long cartItemId, UpdateCartItemQuantityRequest request) {
         CartItem cartItem = cartItemRepository.findByIdWithCartAndProduct(cartItemId)
@@ -79,7 +74,6 @@ public class CartService {
         cartItem.updateQuantity(request.getQuantity());
     }
 
-    // 장바구니 상품 개별 삭제
     @Transactional
     public void deleteCartItem(Long userId, Long cartItemId) {
         CartItem cartItem = cartItemRepository.findByIdWithCartAndProduct(cartItemId)
@@ -90,11 +84,37 @@ public class CartService {
         cartItemRepository.delete(cartItem);
     }
 
-    // 장바구니 전체 비우기
     @Transactional
     public void clearCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CART_ITEM_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
         cartItemRepository.deleteAllByCart(cart);
+    }
+
+    private void validateProduct(Product product, int quantity) {
+        if (quantity <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_QUANTITY);
+        }
+
+        if (product.getStatus() != ProductStatus.ON_SALE) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_ON_SALE);
+        }
+
+        validateStock(product, quantity);
+    }
+
+    private void validateStock(Product product, int quantity) {
+        if (product.getStock() < quantity) {
+            throw new BusinessException(ErrorCode.OUT_OF_STOCK);
+        }
+    }
+
+    private int calculateNextQuantity(int currentQuantity, int addedQuantity) {
+        long nextQuantity = (long) currentQuantity + addedQuantity;
+        if (nextQuantity > Integer.MAX_VALUE) {
+            throw new BusinessException(ErrorCode.INVALID_QUANTITY);
+        }
+
+        return (int) nextQuantity;
     }
 }
