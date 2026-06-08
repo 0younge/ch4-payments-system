@@ -188,7 +188,7 @@ public class OrderService {
     }
 
     private String generatePortonePaymentId() {
-        return "payment-" + UUID.randomUUID();
+        return "pay-" + UUID.randomUUID().toString().replace("-", "");
     }
 
     @Transactional(readOnly = true)

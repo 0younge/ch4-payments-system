@@ -46,10 +46,18 @@ public class PortOneClient implements PaymentGateway {
     public void cancelPayment(String portonePaymentId, int amount, String reason, String idempotencyKey) {
         portOneRestClient.post()
                 .uri("/payments/{paymentId}/cancel", portonePaymentId)
-                .header("Idempotency-Key", idempotencyKey)
+                .header("Idempotency-Key", createIdempotencyHeader(idempotencyKey))
                 .body(new PortOneCancelRequest(reason, amount, portOneProperties.getStoreId()))
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    private String createIdempotencyHeader(String idempotencyKey) {
+        if (idempotencyKey == null || idempotencyKey.length() < 16 || idempotencyKey.length() > 256) {
+            throw new IllegalArgumentException("PortOne 멱등키 길이가 올바르지 않습니다.");
+        }
+
+        return "\"" + idempotencyKey + "\"";
     }
 
     private String getString(Map<?, ?> response, String key) {

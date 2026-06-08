@@ -62,7 +62,6 @@ public class PaymentService {
         }
 
         if (!PORTONE_PAID_STATUS.equals(portonePayment.status())) {
-            paymentCommandService.failPaymentAndOrder(payment.getId(), "PortOne 결제 미완료");
             throw new BusinessException(ErrorCode.PAYMENT_NOT_PAID);
         }
 
