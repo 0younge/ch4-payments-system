@@ -4,6 +4,8 @@ import com.example.ch4paymentssystem.domain.auth.dto.LoginRequest;
 import com.example.ch4paymentssystem.domain.auth.dto.LoginResponse;
 import com.example.ch4paymentssystem.domain.auth.dto.SignupRequest;
 import com.example.ch4paymentssystem.domain.auth.token.JwtTokenProvider;
+import com.example.ch4paymentssystem.domain.cart.entity.Cart;
+import com.example.ch4paymentssystem.domain.cart.repository.CartRepository;
 import com.example.ch4paymentssystem.domain.user.entity.User;
 import com.example.ch4paymentssystem.domain.user.repository.UserRepository;
 import com.example.ch4paymentssystem.global.exception.BusinessException;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final CartRepository cartRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -37,7 +40,8 @@ public class AuthService {
                 request.getPhoneNumber()
         );
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        cartRepository.save(Cart.create(savedUser));
     }
 
     @Transactional(readOnly = true)
