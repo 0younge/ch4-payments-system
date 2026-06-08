@@ -2,16 +2,16 @@ package com.example.ch4paymentssystem.domain.order.controller;
 
 import com.example.ch4paymentssystem.domain.order.dto.request.CancelOrderRequest;
 import com.example.ch4paymentssystem.domain.order.dto.request.CreateOrderRequest;
-import com.example.ch4paymentssystem.domain.order.dto.request.OrderPreviewRequest;
 import com.example.ch4paymentssystem.domain.order.dto.response.*;
 import com.example.ch4paymentssystem.domain.order.entity.OrderStatus;
 import com.example.ch4paymentssystem.domain.order.service.OrderService;
 import com.example.ch4paymentssystem.global.response.ApiResponse;
-import com.example.ch4paymentssystem.global.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -44,7 +44,7 @@ public class OrderController {
         );
     }
 
-    @GetMapping("/me")
+    @GetMapping
     public ResponseEntity<ApiResponse<OrderListResponse>> getMyOrders(
             @AuthenticationPrincipal Long userId,
             @RequestParam(required = false) OrderStatus status,
@@ -71,13 +71,12 @@ public class OrderController {
         );
     }
 
-    @PostMapping("/preview")
+    @GetMapping("/preview")
     public ResponseEntity<ApiResponse<OrderPreviewResponse>> previewOrder(
-            @AuthUser Long userId,
-            @RequestBody OrderPreviewRequest request
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(required = false) List<Long> cartItemIds
     ) {
-        OrderPreviewResponse response =
-                orderService.previewOrder(userId, request);
+        OrderPreviewResponse response = orderService.previewOrder(userId, cartItemIds);
 
         return ResponseEntity.ok(
                 ApiResponse.success(

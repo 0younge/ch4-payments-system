@@ -19,11 +19,11 @@ spring:
       mode: always  # data.sql 항상 실행 되게하는 것
 
 jwt:
-  secret-key: fhrmdlsrlsmddldjqtdmausqnsaudzhemwkrtjddldksehlfxjdlsepdjejgrpwkrtjdgktutwygkgktkffuwntpdy
+  secret-key: ${JWT_SECRET_KEY:}
   expiration-time: 3600000
 
 portone:
-  base-url: ${PORTONE_BASE_URL:https://api.portone.io}
+  base-url: ${PORTONE_BASE_URL:}
   api-secret: ${PORTONE_API_SECRET:}
   store-id: ${PORTONE_STORE_ID:}
   channel-key: ${PORTONE_CHANNEL_KEY:}
