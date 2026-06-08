@@ -78,7 +78,12 @@ public class PaymentService {
         }
 
         try {
-            paymentGateway.cancelPayment(payment.getPortonePaymentId(), payment.getPgAmount(), reason);
+            paymentGateway.cancelPayment(
+                    payment.getPortonePaymentId(),
+                    payment.getPgAmount(),
+                    reason,
+                    "payment-compensation-" + payment.getId()
+            );
         } catch (RuntimeException e) {
             log.warn("PortOne compensation cancel failed.", e);
         }

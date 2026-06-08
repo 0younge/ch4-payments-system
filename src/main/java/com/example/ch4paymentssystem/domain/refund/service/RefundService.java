@@ -3,6 +3,7 @@ package com.example.ch4paymentssystem.domain.refund.service;
 import com.example.ch4paymentssystem.domain.payment.port.PaymentGateway;
 import com.example.ch4paymentssystem.domain.refund.dto.RefundRequest;
 import com.example.ch4paymentssystem.domain.refund.dto.RefundResponse;
+import com.example.ch4paymentssystem.domain.refund.entity.RefundStatus;
 import com.example.ch4paymentssystem.global.exception.BusinessException;
 import com.example.ch4paymentssystem.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,10 @@ public class RefundService {
 
     public RefundResponse requestRefund(Long userId, RefundRequest request) {
         RefundResponse requestedRefund = refundCommandService.createRefundRequest(userId, request);
+
+        if (RefundStatus.COMPLETED.name().equals(requestedRefund.getRefundStatus())) {
+            return requestedRefund;
+        }
 
         try {
             cancelPgPayment(requestedRefund);
@@ -36,7 +41,8 @@ public class RefundService {
         paymentGateway.cancelPayment(
                 refund.getPortonePaymentId(),
                 refund.getPgRefundAmount(),
-                refund.getRefundReason()
+                refund.getRefundReason(),
+                "refund-" + refund.getRefundId()
         );
     }
 }

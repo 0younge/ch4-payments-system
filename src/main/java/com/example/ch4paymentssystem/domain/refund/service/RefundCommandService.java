@@ -45,7 +45,6 @@ public class RefundCommandService {
         Order order = payment.getOrder();
 
         validateOwner(userId, order);
-        validatePaymentStatus(payment);
 
         Map<Long, Integer> requestedQuantities = getRequestedQuantities(request.getRefundItems());
         List<OrderItem> orderItems = orderItemRepository.findAllByOrderIdAndIdIn(
@@ -56,6 +55,13 @@ public class RefundCommandService {
         if (orderItems.size() != requestedQuantities.size()) {
             throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
         }
+
+        RefundResponse existingRefund = findExistingRefund(payment, requestedQuantities, request.getRefundReason());
+        if (existingRefund != null) {
+            return existingRefund;
+        }
+
+        validatePaymentStatus(payment);
 
         Map<Long, OrderItem> orderItemMap = orderItems.stream()
                 .collect(Collectors.toMap(OrderItem::getId, Function.identity()));
@@ -94,13 +100,17 @@ public class RefundCommandService {
         Refund refund = refundRepository.findByIdWithPaymentOrderUser(refundId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFUND_NOT_FOUND));
 
-        if (refund.getRefundStatus() != RefundStatus.REQUESTED) {
-            throw new BusinessException(ErrorCode.INVALID_REFUND_STATUS);
-        }
-
         List<RefundItem> refundItems = refundItemRepository.findAllByRefundId(refundId);
         if (refundItems.isEmpty()) {
             throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
+        }
+
+        if (refund.getRefundStatus() == RefundStatus.COMPLETED) {
+            return RefundResponse.from(refund, refundItems);
+        }
+
+        if (refund.getRefundStatus() != RefundStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_STATUS);
         }
 
         for (RefundItem refundItem : refundItems) {
@@ -129,7 +139,71 @@ public class RefundCommandService {
         Refund refund = refundRepository.findById(refundId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFUND_NOT_FOUND));
 
+        if (refund.getRefundStatus() == RefundStatus.FAILED) {
+            return;
+        }
+
         refund.fail(failReason);
+    }
+
+    private RefundResponse findExistingRefund(
+            Payment payment,
+            Map<Long, Integer> requestedQuantities,
+            String refundReason
+    ) {
+        RefundResponse completedRefund = findMatchingRefund(
+                payment,
+                requestedQuantities,
+                refundReason,
+                RefundStatus.COMPLETED
+        );
+        if (completedRefund != null) {
+            return completedRefund;
+        }
+
+        return findMatchingRefund(
+                payment,
+                requestedQuantities,
+                refundReason,
+                RefundStatus.REQUESTED
+        );
+    }
+
+    private RefundResponse findMatchingRefund(
+            Payment payment,
+            Map<Long, Integer> requestedQuantities,
+            String refundReason,
+            RefundStatus refundStatus
+    ) {
+        List<Refund> refunds = refundRepository.findAllByPaymentIdAndRefundStatus(payment.getId(), refundStatus);
+
+        for (Refund refund : refunds) {
+            if (!refund.getRefundReason().equals(refundReason)) {
+                continue;
+            }
+
+            List<RefundItem> refundItems = refundItemRepository.findAllByRefundId(refund.getId());
+            if (isSameRefundItems(refundItems, requestedQuantities)) {
+                return RefundResponse.from(refund, refundItems);
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isSameRefundItems(List<RefundItem> refundItems, Map<Long, Integer> requestedQuantities) {
+        if (refundItems.size() != requestedQuantities.size()) {
+            return false;
+        }
+
+        Map<Long, Integer> refundItemQuantities = refundItems.stream()
+                .collect(Collectors.toMap(
+                        refundItem -> refundItem.getOrderItem().getId(),
+                        RefundItem::getQuantity,
+                        Integer::sum
+                ));
+
+        return refundItemQuantities.equals(requestedQuantities);
     }
 
     private void validateRequest(RefundRequest request) {

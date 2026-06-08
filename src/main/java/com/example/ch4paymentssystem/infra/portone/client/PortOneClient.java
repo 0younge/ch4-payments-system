@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.util.Map;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -44,10 +43,10 @@ public class PortOneClient implements PaymentGateway {
     }
 
     @Override
-    public void cancelPayment(String portonePaymentId, int amount, String reason) {
+    public void cancelPayment(String portonePaymentId, int amount, String reason, String idempotencyKey) {
         portOneRestClient.post()
                 .uri("/payments/{paymentId}/cancel", portonePaymentId)
-                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("Idempotency-Key", idempotencyKey)
                 .body(new PortOneCancelRequest(reason, amount, portOneProperties.getStoreId()))
                 .retrieve()
                 .toBodilessEntity();
