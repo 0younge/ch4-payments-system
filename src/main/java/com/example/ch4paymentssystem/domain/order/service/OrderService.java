@@ -6,7 +6,6 @@ import com.example.ch4paymentssystem.domain.cart.repository.CartItemRepository;
 import com.example.ch4paymentssystem.domain.cart.repository.CartRepository;
 import com.example.ch4paymentssystem.domain.order.dto.request.CancelOrderRequest;
 import com.example.ch4paymentssystem.domain.order.dto.request.CreateOrderRequest;
-import com.example.ch4paymentssystem.domain.order.dto.request.OrderPreviewRequest;
 import com.example.ch4paymentssystem.domain.order.dto.response.*;
 import com.example.ch4paymentssystem.domain.order.entity.Order;
 import com.example.ch4paymentssystem.domain.order.entity.OrderItem;
@@ -18,6 +17,7 @@ import com.example.ch4paymentssystem.domain.payment.entity.PaymentStatus;
 import com.example.ch4paymentssystem.domain.payment.repository.PaymentRepository;
 import com.example.ch4paymentssystem.domain.product.entity.Product;
 import com.example.ch4paymentssystem.domain.product.entity.ProductStatus;
+import com.example.ch4paymentssystem.domain.product.repository.ProductRepository;
 import com.example.ch4paymentssystem.domain.user.entity.User;
 import com.example.ch4paymentssystem.domain.user.repository.UserRepository;
 import com.example.ch4paymentssystem.global.exception.BusinessException;
@@ -44,6 +44,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentRepository paymentRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     public CreateOrderResponse createOrder(Long userId, CreateOrderRequest request) {
@@ -140,7 +141,8 @@ public class OrderService {
     }
 
     private OrderItem createOrderItemAndDecreaseStock(Order order, CartItem cartItem) {
-        Product product = cartItem.getProduct();
+        Product product = productRepository.findByIdForUpdate(cartItem.getProduct().getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
         int quantity = cartItem.getQuantity();
 
         validateProduct(product, quantity);
@@ -346,14 +348,14 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderPreviewResponse previewOrder(
             Long userId,
-            OrderPreviewRequest request
+            List<Long> cartItemIds
     ) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
 
         List<CartItem> cartItems = getPreviewCartItems(
                 cart.getId(),
-                request.getCartItemIds()
+                cartItemIds
         );
 
         if (cartItems.isEmpty()) {
