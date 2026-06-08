@@ -1,6 +1,8 @@
 package com.example.ch4paymentssystem.domain.user.entity;
 
 import com.example.ch4paymentssystem.common.BaseTimeEntity;
+import com.example.ch4paymentssystem.global.exception.BusinessException;
+import com.example.ch4paymentssystem.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,6 +41,51 @@ public class User extends BaseTimeEntity {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.pointBalance = 0;
+    }
+
+    public void usePoint(int amount) {
+        if (amount < 0) {
+            throw new BusinessException(ErrorCode.INVALID_POINT_AMOUNT);
+        }
+
+        if (this.pointBalance < amount) {
+            throw new BusinessException(ErrorCode.NOT_ENOUGH_POINT);
+        }
+
+        this.pointBalance -= amount;
+    }
+
+    public void earnPoint(int amount) {
+        increasePoint(amount);
+    }
+
+    public void refundUsedPoint(int amount) {
+        increasePoint(amount);
+    }
+
+    public void cancelEarnedPoint(int amount) {
+        if (amount < 0) {
+            throw new BusinessException(ErrorCode.INVALID_POINT_AMOUNT);
+        }
+
+        if (this.pointBalance < amount) {
+            throw new BusinessException(ErrorCode.NOT_ENOUGH_POINT);
+        }
+
+        this.pointBalance -= amount;
+    }
+
+    private void increasePoint(int amount) {
+        if (amount < 0) {
+            throw new BusinessException(ErrorCode.INVALID_POINT_AMOUNT);
+        }
+
+        long nextPointBalance = (long) this.pointBalance + amount;
+        if (nextPointBalance > Integer.MAX_VALUE) {
+            throw new BusinessException(ErrorCode.INVALID_POINT_AMOUNT);
+        }
+
+        this.pointBalance = (int) nextPointBalance;
     }
 
 }

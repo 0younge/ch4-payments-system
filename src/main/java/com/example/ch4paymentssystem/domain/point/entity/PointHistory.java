@@ -39,4 +39,22 @@ public class PointHistory extends BaseCreatedEntity {
     @Column(nullable = false, length = 255)
     private String description;
 
+    public static PointHistory create(
+            User user,
+            Order order,
+            PointType pointType,
+            int amount,
+            int balanceAfter,
+            String description
+    ) {
+        PointHistory pointHistory = new PointHistory();
+        pointHistory.user = user;
+        pointHistory.order = order;
+        pointHistory.pointType = pointType;
+        pointHistory.amount = amount;
+        pointHistory.balanceAfter = balanceAfter;
+        pointHistory.description = description;
+        return pointHistory;
+    }
+
 }

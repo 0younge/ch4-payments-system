@@ -2,6 +2,8 @@ package com.example.ch4paymentssystem.domain.refund.entity;
 
 import com.example.ch4paymentssystem.common.BaseTimeEntity;
 import com.example.ch4paymentssystem.domain.payment.entity.Payment;
+import com.example.ch4paymentssystem.global.exception.BusinessException;
+import com.example.ch4paymentssystem.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -46,4 +48,63 @@ public class Refund extends BaseTimeEntity {
     @Column(length = 255)
     private String failReason;
 
+    public static Refund request(
+            Payment payment,
+            int totalRefundAmount,
+            int pointRefundAmount,
+            int pgRefundAmount,
+            String refundReason
+    ) {
+        validateRefundAmount(totalRefundAmount, pointRefundAmount, pgRefundAmount);
+
+        if (payment == null || refundReason == null || refundReason.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
+        }
+
+        Refund refund = new Refund();
+        refund.payment = payment;
+        refund.refundStatus = RefundStatus.REQUESTED;
+        refund.totalRefundAmount = totalRefundAmount;
+        refund.pointRefundAmount = pointRefundAmount;
+        refund.pgRefundAmount = pgRefundAmount;
+        refund.refundReason = refundReason;
+        return refund;
+    }
+
+    private static void validateRefundAmount(
+            int totalRefundAmount,
+            int pointRefundAmount,
+            int pgRefundAmount
+    ) {
+        if (totalRefundAmount < 0 || pointRefundAmount < 0 || pgRefundAmount < 0) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
+        }
+
+        if (totalRefundAmount != pointRefundAmount + pgRefundAmount) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
+        }
+    }
+
+    public void complete() {
+        if (this.refundStatus != RefundStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_STATUS);
+        }
+
+        this.refundStatus = RefundStatus.COMPLETED;
+        this.refundedAt = LocalDateTime.now();
+    }
+
+    public void fail(String failReason) {
+        if (this.refundStatus != RefundStatus.REQUESTED) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_STATUS);
+        }
+
+        if (failReason == null || failReason.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_REFUND_REQUEST);
+        }
+
+        this.refundStatus = RefundStatus.FAILED;
+        this.failedAt = LocalDateTime.now();
+        this.failReason = failReason;
+    }
 }
