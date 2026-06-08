@@ -43,6 +43,8 @@ public enum ErrorCode {
     INVALID_PAYMENT_REQUEST(HttpStatus.BAD_REQUEST, "결제 요청 정보가 올바르지 않습니다."),
     PAYMENT_NOT_PAID(HttpStatus.CONFLICT, "결제가 완료되지 않았습니다."),
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "결제 금액이 일치하지 않습니다."),
+    INVALID_WEBHOOK_REQUEST(HttpStatus.BAD_REQUEST, "웹훅 요청 정보가 올바르지 않습니다."),
+    INVALID_WEBHOOK_SIGNATURE(HttpStatus.UNAUTHORIZED, "웹훅 서명이 올바르지 않습니다."),
 
     REFUND_NOT_FOUND(HttpStatus.NOT_FOUND, "환불 정보를 찾을 수 없습니다."),
     INVALID_REFUND_REQUEST(HttpStatus.BAD_REQUEST, "환불 요청 정보가 올바르지 않습니다."),

@@ -38,6 +38,17 @@ public class PaymentService {
             throw new BusinessException(ErrorCode.INVALID_PAYMENT_REQUEST);
         }
 
+        return confirmPayment(payment);
+    }
+
+    public PaymentConfirmResponse confirmPaymentByWebhook(String portonePaymentId) {
+        Payment payment = paymentRepository.findByPortonePaymentIdWithOrderAndUser(portonePaymentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        return confirmPayment(payment);
+    }
+
+    private PaymentConfirmResponse confirmPayment(Payment payment) {
         if (payment.getPaymentStatus() != PaymentStatus.READY) {
             return PaymentConfirmResponse.from(payment);
         }
