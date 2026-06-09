@@ -53,22 +53,24 @@ public class PaymentService {
             return PaymentConfirmResponse.from(payment);
         }
 
-        PaymentGatewayResponse portonePayment = paymentGateway.getPayment(payment.getPortonePaymentId());
+        if (payment.getPgAmount() > 0) {
+            PaymentGatewayResponse portonePayment = paymentGateway.getPayment(payment.getPortonePaymentId());
 
-        if (!payment.getPortonePaymentId().equals(portonePayment.id())) {
-            cancelPortonePayment(payment, "결제 식별자 불일치 자동 취소");
-            paymentCommandService.failPaymentAndOrder(payment.getId(), "결제 식별자 불일치");
-            throw new BusinessException(ErrorCode.INVALID_PAYMENT_REQUEST);
-        }
+            if (!payment.getPortonePaymentId().equals(portonePayment.id())) {
+                cancelPortonePayment(payment, "결제 식별자 불일치 자동 취소");
+                paymentCommandService.failPaymentAndOrder(payment.getId(), "결제 식별자 불일치");
+                throw new BusinessException(ErrorCode.INVALID_PAYMENT_REQUEST);
+            }
 
-        if (!PORTONE_PAID_STATUS.equals(portonePayment.status())) {
-            throw new BusinessException(ErrorCode.PAYMENT_NOT_PAID);
-        }
+            if (!PORTONE_PAID_STATUS.equals(portonePayment.status())) {
+                throw new BusinessException(ErrorCode.PAYMENT_NOT_PAID);
+            }
 
-        if (payment.getPgAmount() != portonePayment.totalAmount()) {
-            cancelPortonePayment(payment, "결제 금액 불일치 자동 취소");
-            paymentCommandService.failPaymentAndOrder(payment.getId(), "결제 금액 불일치");
-            throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
+            if (payment.getPgAmount() != portonePayment.totalAmount()) {
+                cancelPortonePayment(payment, "결제 금액 불일치 자동 취소");
+                paymentCommandService.failPaymentAndOrder(payment.getId(), "결제 금액 불일치");
+                throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
+            }
         }
 
         try {
