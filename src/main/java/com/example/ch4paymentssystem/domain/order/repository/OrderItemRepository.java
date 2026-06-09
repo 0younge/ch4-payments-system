@@ -1,0 +1,13 @@
+package com.example.ch4paymentssystem.domain.order.repository;
+
+import com.example.ch4paymentssystem.domain.order.entity.OrderItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
+
+    List<OrderItem> findAllByOrderId(Long orderId);
+
+    List<OrderItem> findAllByOrderIdAndIdIn(Long orderId, List<Long> ids);
+}

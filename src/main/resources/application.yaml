@@ -1,3 +1,31 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   application:
     name: ch4-payments-system
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?serverTimezone=${DB_SERVER_TIMEZONE}&characterEncoding=${DB_CHARACTER_ENCODING}&useSSL=${DB_USE_SSL}&allowPublicKeyRetrieval=${DB_ALLOW_PUBLIC_KEY_RETRIEVAL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO}
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: ${SQL_INIT_MODE}
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  expiration-time: ${JWT_EXPIRATION_TIME}
+
+portone:
+  base-url: ${PORTONE_BASE_URL}
+  api-secret: ${PORTONE_API_SECRET}
+  store-id: ${PORTONE_STORE_ID}
+  channel-key: ${PORTONE_CHANNEL_KEY}
+  webhook-secret: ${PORTONE_WEBHOOK_SECRET}
