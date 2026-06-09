@@ -11,6 +11,8 @@ import com.example.ch4paymentssystem.domain.cart.repository.CartRepository;
 import com.example.ch4paymentssystem.domain.product.entity.Product;
 import com.example.ch4paymentssystem.domain.product.entity.ProductStatus;
 import com.example.ch4paymentssystem.domain.product.repository.ProductRepository;
+import com.example.ch4paymentssystem.domain.user.entity.User;
+import com.example.ch4paymentssystem.domain.user.repository.UserRepository;
 import com.example.ch4paymentssystem.global.exception.BusinessException;
 import com.example.ch4paymentssystem.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +29,11 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public CartResponse getCart(Long userId) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
+        Cart cart = getOrCreateCart(userId);
         List<CartItem> cartItems = cartItemRepository.findByCartWithProduct(cart);
         List<CartItemResponse> items = cartItems.stream()
                 .map(CartItemResponse::from)
@@ -48,8 +50,7 @@ public class CartService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
         validateProduct(product, request.getQuantity());
 
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
+        Cart cart = getOrCreateCart(userId);
         Optional<CartItem> existingCartItem = cartItemRepository.findByCartAndProduct(cart, product);
         if (existingCartItem.isPresent()) {
             CartItem cartItem = existingCartItem.get();
@@ -86,9 +87,17 @@ public class CartService {
 
     @Transactional
     public void clearCart(Long userId) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CART_NOT_FOUND));
+        Cart cart = getOrCreateCart(userId);
         cartItemRepository.deleteAllByCart(cart);
+    }
+
+    private Cart getOrCreateCart(Long userId) {
+        return cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                    return cartRepository.save(Cart.create(user));
+                });
     }
 
     private void validateProduct(Product product, int quantity) {

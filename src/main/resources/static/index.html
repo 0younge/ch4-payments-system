@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CH4 Store</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="#shop">
+        <span class="brand-mark">CH4</span>
+        <span>
+            <strong>CH4 Store</strong>
+            <small>주문, 결제, 환불 데모 쇼핑몰</small>
+        </span>
+    </a>
+    <nav class="main-nav">
+        <a href="#shop">Shop</a>
+        <a href="#cart">Cart</a>
+        <a href="#checkout">Checkout</a>
+        <a href="#mypage">My Page</a>
+    </nav>
+    <div class="header-actions">
+        <span id="auth-status" class="status-chip">로그아웃</span>
+        <button id="logout-button" class="ghost-button" type="button">로그아웃</button>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="hero-copy">
+            <span class="eyebrow">Commerce Payment System</span>
+            <h1>상품을 담고, 주문하고, 결제와 환불까지 한 화면에서 확인합니다.</h1>
+            <p>현재 서버 API를 실제 쇼핑몰 흐름처럼 사용할 수 있게 구성했습니다.</p>
+            <div class="hero-actions">
+                <a class="primary-link" href="#shop">상품 보러가기</a>
+                <a class="secondary-link" href="#mypage">주문 확인하기</a>
+            </div>
+        </div>
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <button class="active" type="button" data-auth-tab="login">로그인</button>
+                <button type="button" data-auth-tab="signup">회원가입</button>
+            </div>
+            <form id="login-form" class="auth-form" data-auth-panel="login">
+                <label>이메일<input id="login-email" type="email" autocomplete="username"></label>
+                <label>비밀번호<input id="login-password" type="password" autocomplete="current-password" value="Password1234!"></label>
+                <button type="submit">로그인</button>
+            </form>
+            <form id="signup-form" class="auth-form hidden" data-auth-panel="signup">
+                <label>이메일<input id="signup-email" type="email" autocomplete="username"></label>
+                <label>비밀번호<input id="signup-password" type="password" autocomplete="new-password" value="Password1234!"></label>
+                <label>이름<input id="signup-name" type="text" value="테스트회원"></label>
+                <label>전화번호<input id="signup-phone" type="text" value="01012345678"></label>
+                <button type="submit">가입하고 로그인</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="shop" class="section">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Products</span>
+                <h2>상품 둘러보기</h2>
+            </div>
+            <form id="product-filter-form" class="filter-bar">
+                <select id="product-category" aria-label="카테고리">
+                    <option value="">전체 카테고리</option>
+                    <option value="TOP">상의</option>
+                    <option value="BOTTOM">하의</option>
+                    <option value="OUTER">아우터</option>
+                    <option value="SHOES">신발</option>
+                    <option value="BAG">가방</option>
+                </select>
+                <select id="product-status" aria-label="판매 상태">
+                    <option value="">전체 상태</option>
+                    <option value="ON_SALE">판매중</option>
+                    <option value="SOLD_OUT">품절</option>
+                </select>
+                <select id="product-sort" aria-label="정렬">
+                    <option value="LATEST">최신순</option>
+                    <option value="PRICE_ASC">낮은 가격순</option>
+                    <option value="PRICE_DESC">높은 가격순</option>
+                </select>
+                <input id="product-min-price" type="number" min="0" placeholder="최소가">
+                <input id="product-max-price" type="number" min="0" placeholder="최대가">
+                <button type="submit">검색</button>
+            </form>
+        </div>
+        <div class="shop-grid">
+            <div id="product-grid" class="product-grid"></div>
+            <aside id="product-detail" class="side-panel"></aside>
+        </div>
+    </section>
+
+    <section id="cart" class="section">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Cart</span>
+                <h2>장바구니</h2>
+            </div>
+            <div class="section-actions">
+                <button id="cart-refresh-button" type="button">새로고침</button>
+                <button id="cart-clear-button" class="danger-button" type="button">전체 비우기</button>
+            </div>
+        </div>
+        <div class="cart-layout">
+            <div id="cart-list" class="cart-list"></div>
+            <aside class="summary-card">
+                <h3>주문 요약</h3>
+                <div class="summary-row"><span>선택 상품</span><strong id="selected-count">0개</strong></div>
+                <div class="summary-row total"><span>예상 금액</span><strong id="selected-total">0원</strong></div>
+                <a class="primary-link full" href="#checkout">주문하러 가기</a>
+            </aside>
+        </div>
+    </section>
+
+    <section id="checkout" class="section">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">Checkout</span>
+                <h2>주문과 결제</h2>
+            </div>
+        </div>
+        <div class="checkout-grid">
+            <div class="panel">
+                <h3>주문서</h3>
+                <div class="checkout-actions">
+                    <button id="preview-order-button" type="button">주문서 미리보기</button>
+                    <label>사용 포인트<input id="used-point" type="number" min="0" value="0"></label>
+                    <button id="create-order-button" type="button">주문 생성</button>
+                </div>
+                <div id="order-preview" class="soft-box"></div>
+            </div>
+            <div class="panel">
+                <h3>결제</h3>
+                <form id="payment-confirm-form" class="payment-form">
+                    <label>주문 ID<input id="payment-order-id" type="number" min="1"></label>
+                    <label>PortOne Payment ID<input id="payment-portone-id" type="text" placeholder="주문 생성 후 자동 입력"></label>
+                    <label>구매자 이메일<input id="customer-email" type="email" autocomplete="email" required></label>
+                    <label>구매자 이름<input id="customer-name" type="text" autocomplete="name" value="테스트회원"></label>
+                    <label>구매자 전화번호<input id="customer-phone" type="text" autocomplete="tel" value="01012345678"></label>
+                    <button id="payment-window-button" type="button">결제창 열기</button>
+                    <button type="submit">결제 확정</button>
+                </form>
+                <div id="last-order" class="soft-box"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="mypage" class="section">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">My Page</span>
+                <h2>주문, 포인트, 환불</h2>
+            </div>
+            <div class="section-actions">
+                <button id="my-refresh-button" type="button">내 정보 새로고침</button>
+            </div>
+        </div>
+        <div class="mypage-grid">
+            <div class="panel">
+                <h3>포인트</h3>
+                <div id="point-balance" class="point-balance">0 P</div>
+                <div id="point-histories" class="history-list"></div>
+            </div>
+            <div class="panel orders-panel">
+                <div class="panel-title-row">
+                    <h3>주문 내역</h3>
+                    <select id="order-status-filter" aria-label="주문 상태">
+                        <option value="">전체</option>
+                        <option value="PAYMENT_PENDING">결제 대기</option>
+                        <option value="PAID">결제 완료</option>
+                        <option value="CANCELLED">취소</option>
+                    </select>
+                </div>
+                <div id="order-list" class="order-list"></div>
+            </div>
+            <div class="panel">
+                <h3>주문 상세</h3>
+                <div id="order-detail" class="soft-box"></div>
+            </div>
+            <div class="panel">
+                <h3>환불 요청</h3>
+                <form id="refund-form" class="refund-form">
+                    <label>주문 ID<input id="refund-order-id" type="number" min="1"></label>
+                    <label>주문 상품 ID<input id="refund-order-item-id" type="number" min="1"></label>
+                    <label>수량<input id="refund-quantity" type="number" min="1" value="1"></label>
+                    <label>사유<input id="refund-reason" type="text" value="사용자 요청"></label>
+                    <button type="submit">환불 요청</button>
+                </form>
+                <div id="refund-result" class="soft-box"></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="api-feedback" class="feedback-box hidden"></div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

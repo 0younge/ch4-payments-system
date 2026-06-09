@@ -12,7 +12,7 @@ VALUES
 INSERT INTO products
 (name, price, stock, description, category, status, created_at, updated_at)
 VALUES
-    ('오버핏 코튼 티셔츠', 39000, 100, '부드러운 코튼 소재의 오버핏 티셔츠', 'TOP', 'ON_SALE', NOW(), NOW()),
+    ('오버핏 코튼 티셔츠', 1000, 100, '부드러운 코튼 소재의 오버핏 티셔츠', 'TOP', 'ON_SALE', NOW(), NOW()),
     ('와이드 데님 팬츠', 59000, 50, '데일리 와이드 청바지', 'BOTTOM', 'ON_SALE', NOW(), NOW()),
     ('후드 집업', 79000, 30, '기본 후드 집업', 'OUTER', 'ON_SALE', NOW(), NOW()),
     ('러닝화', 99000, 20, '쿠셔닝이 좋은 러닝화', 'SHOES', 'ON_SALE', NOW(), NOW()),

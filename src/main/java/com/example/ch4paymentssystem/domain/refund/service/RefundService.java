@@ -47,7 +47,7 @@ public class RefundService {
                 refund.getPortonePaymentId(),
                 refund.getPgRefundAmount(),
                 refund.getRefundReason(),
-                "refund-" + refund.getRefundId()
+                "refund-cancel-" + refund.getRefundId() + "-" + refund.getPortonePaymentId()
         );
     }
 }
