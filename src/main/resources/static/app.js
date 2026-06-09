@@ -5,10 +5,7 @@ try {
     savedCustomer = {};
 }
 
-const paymentConfig = {
-    storeId: "store-3b493e2c-3d88-4832-a5cb-54065eb4b98c",
-    channelKey: "channel-key-7097154f-cd25-4f71-882e-f25274162c58"
-};
+let paymentConfig = {};
 
 const state = {
     token: localStorage.getItem("accessToken") || "",
@@ -201,6 +198,10 @@ async function api(name, method, path, body, options = {}) {
         throw new Error(payload?.message || `${name} 요청에 실패했습니다.`);
     }
     return payload?.data;
+}
+
+async function loadPaymentConfig() {
+    paymentConfig = await api("결제 설정", "GET", "/api/payments/config", undefined, { auth: false });
 }
 
 function empty(message) {
@@ -509,6 +510,9 @@ async function openPaymentWindow(order = state.lastOrder) {
     }
     if (!window.PortOne?.requestPayment) {
         throw new Error("PortOne SDK를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.");
+    }
+    if (!paymentConfig.storeId || !paymentConfig.channelKey) {
+        throw new Error("PortOne 결제 설정을 불러오지 못했습니다.");
     }
     const customer = paymentCustomer();
     const response = await window.PortOne.requestPayment({
@@ -887,6 +891,7 @@ function bindEvents() {
 }
 
 async function init() {
+    await loadPaymentConfig();
     fillRandomUser();
     fillPaymentCustomerFields();
     updateAuthStatus();

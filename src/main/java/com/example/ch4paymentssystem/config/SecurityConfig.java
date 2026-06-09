@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index.html", "/styles.css", "/app.js", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/signup", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/config").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
                         .anyRequest().authenticated()
                 )
